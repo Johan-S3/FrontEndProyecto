@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuarios</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+  <header class="header">
+    <nav class="nav">
+      <ul class="nav__space">
+        <li class="nav__item "><a class="item__link" href="../Ciudades/ciudades.html">Ciudades</a></li>
+        <li class="nav__item "><a class="item__link" href="../Generos/generos.html">Generos</a></li>
+        <li class="nav__item "><a class="item__link" href="../Habilidades/habilidades.html">Lenguajes</a></li>
+      </ul>
+    </nav>
+    <div class="container container--title">
+      <h1>Usuarios</h1>
+    </div>
+  </header>
+  <main>
+    <section>
+      <div class="container">
+        <div class="card">
+          <h2 class="center">Ingrese su datos de usuario</h2>
+          <form action="#" novalidate>
+            <div class="form__control">
+              <input type="text" name="nombre" placeholder="Nombre" required>
+            </div>
+            <div class="form__control">
+              <input type="text" name="apellido" placeholder="Apellido" required>
+            </div>
+            <div class="form__control">
+              <input type="tel" name="telefono" placeholder="Telefono" maxlength="10" required>
+            </div>
+            <div class="form__control">
+              <select name="ciudad" id="ciudad" required>
+                <option>Ciudades</option>
+                <option value="1">Bucaramanga</option>
+                <option value="2">Floridablanca</option>
+                <option value="3">Girón</option>
+                <option value="4">Piedecuesta</option>
+              </select>
+            </div>
+            <div class="form__control">
+              <input type="number" name="documento" placeholder="Documento" required>
+            </div>
+            <div class="form__control">
+              <input type="text" name="usuario" placeholder="Usuario" required>
+            </div>
+            <div class="form__control">
+              <input type="password" name="constrasena" placeholder="Contraseña" required>
+            </div>
+            <div class="form__control">
+              <div class="radios">
+                <h4>Genero:</h4>
+                <input class="form__inputs" type="radio" value="1" id="hombre" name="genero" required>
+                <label for="hombre">Hombre</label>
+                <input class="form__inputs" type="radio" value="2" id="mujer" name="genero" required>
+                <label for="mujer">Mujer</label>
+              </div>
+            </div>
+            <div class="form__control">
+              <div class="form__checks">
+                <h4>Habilidades:</h4>
+                <label class="" for="HTML">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="HTML" value="1" required>
+                  HTML
+                </label>
+                <label for="CSS">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="CSS" value="2" required>
+                  CSS
+                </label>
+                <label for="javaScript">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="javaScript" value="3" required>
+                  javaScript
+                </label>
+                <label for="Java">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="Java" value="4" required>
+                  Java
+                </label>
+                <label for="Php">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="Php" value="5" required>
+                  Php
+                </label>
+                <label for="C#">
+                  <input class="form__inputs" type="checkbox" name="habilidades" id="C#" value="6" required>
+                  C#
+                </label>
+              </div>
+            </div>
+            <div class="form__control">
+              <input class="form__check" type="checkbox" name="politicas" id="politicas">
+              <label class="form__terminos" for="politicas">
+                Acepta los
+                <a href="">términos y condiciones</a>
+                de la politica de protección de datos.
+              </label>
+            </div>
+            <button type="submit" name="" id="btn_validar">Registrar</button>
+          </form>
+        </div>
+
+        <!-- <table class="table">
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Telefono</th>
+            <th>Ciudad</th>
+            <th>Documento</th>
+            <th>Usuario</th>
+            <th>constraseña</th>
+          </tr>
+        </table> -->
+      </div>
+    </section>
+  </main>
+  <script src="app.js" type="module"></script>
+</body>
+
+</html>
