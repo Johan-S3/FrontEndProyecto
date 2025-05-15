@@ -1,6 +1,6 @@
 //Importaciones
 
-import { validarFormulario, outFocus, validarLetras } from "../module.js";
+import { validarFormulario, outFocus, validarLetras, crearRegistro, editarRegistro, eliminarRegistro } from "../module.js";
 
 // Variables
 
@@ -17,6 +17,9 @@ nombreCiudad.addEventListener("keydown", validarLetras);
 nombreCiudad.addEventListener("blur", outFocus);
 
 
+
+
+// Variables donde se almacenan los datos registrados y donde se almacena el id del elemento que se quiere editar temporalmente.
 let ciudades = [];
 let idEditar = null;
 
@@ -24,20 +27,13 @@ formulario.addEventListener("submit", (e) => {
   const datos = validarFormulario(e);
   if (datos) {
     if (idEditar) {
-      // editar ciudad
-      ciudades = ciudades.map((c) =>
-        c.id === idEditar ? { id: c.id, nombre: datos.nombreCiudad } : c
-      );
+      ciudades = editarRegistro(ciudades, idEditar, { nombre: datos.nombreCiudad });
       idEditar = null;
     } else {
-      // agregar ciudad
-      const nuevoId = ciudades.length > 0 ? ciudades[ciudades.length - 1].id + 1 : 1;
-      ciudades.push({ id: nuevoId, nombre: datos.nombreCiudad });
+      ciudades = crearRegistro(ciudades, { nombre: datos.nombreCiudad });
     }
     renderizarTabla();
     formulario.reset();
-  } else {
-    console.log("Error: formulario no válido");
   }
 });
 
@@ -56,7 +52,6 @@ function renderizarTabla() {
     tabla.appendChild(fila);
   });
 
-  // Eventos de Editar y Eliminar se agregan después de renderizar
   const botonesEditar = tabla.querySelectorAll(".editar");
   const botonesEliminar = tabla.querySelectorAll(".eliminar");
 
@@ -74,11 +69,8 @@ function renderizarTabla() {
   botonesEliminar.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const id = parseInt(e.target.dataset.id);
-      const index = ciudades.findIndex((c) => c.id === id);
-      if (index !== -1) {
-        ciudades.splice(index, 1);
-        renderizarTabla(); // Vuelve a dibujar la tabla
-      }
+      ciudades = eliminarRegistro(ciudades, id);
+      renderizarTabla();
     });
   });
 }
