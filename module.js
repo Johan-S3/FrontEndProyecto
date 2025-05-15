@@ -1,5 +1,5 @@
 export const validarFormulario = (e) => {
-  let persona = {};
+  let objeto = {};
   e.preventDefault();
   // console.log(e.target.children);
   
@@ -18,9 +18,9 @@ export const validarFormulario = (e) => {
   if (radios.length > 0) {
     isChecked = radios.find((radio) => radio.checked) || [];
     if (isChecked.length === 0) {
-      persona[radios[0].name] = "";
+      objeto[radios[0].name] = "";
     } else {
-      persona[isChecked.name] = isChecked.value;
+      objeto[isChecked.name] = isChecked.value;
     }  
   }
   
@@ -35,7 +35,7 @@ export const validarFormulario = (e) => {
       alert("Debe seleccionar 3 o más habilidades");
       
     } else {
-      persona.lenguaje = checkBoxSelected.map((elemento) => {
+      objeto.lenguaje = checkBoxSelected.map((elemento) => {
         return elemento.value;
       })
     }    
@@ -84,28 +84,33 @@ export const validarFormulario = (e) => {
         break;
     }
 
-    //Valido si el campo tiene informacion le agrego al objeto persona la propiedad con su name y su valor.
+    //Valido si el campo tiene informacion le agrego al objeto la propiedad con su name y su valor.
     if (campo.type != "radio" && campo.type != "checkbox") {
       if((campo.tagName == "INPUT" && campo.value) || (campo.tagName == "SELECT" && campo.selectedIndex != 0)){
-        persona[nameCampo] = campo.value;
+        objeto[nameCampo] = campo.value;
       } else {
         isFull = false;
       }
     }
   })
 
-  if (Object.keys(persona).length > 0 && persona.lenguaje) {
-      if (isFull) console.log(persona);
+  if (Object.keys(objeto).length > 0) {
+      if (isFull){
+        console.log(objeto);
+        return objeto
+      } else{
+        return null;
+      }
   }  
 }
 
-// export const llenarTabla = (persona) => {
+// export const llenarTabla = (objeto) => {
 //   const tabla = document.querySelector("table");
 //   let fila = document.createElement("tr");
 //   tabla.insertAdjacentElement("beforeend", fila);
-//   for (let i = 0; i < Object.keys(persona).length; i++) {
+//   for (let i = 0; i < Object.keys(objeto).length; i++) {
 //     let celda = document.createElement("td");
-//     celda.textContent = persona[i];
+//     celda.textContent = objeto[i];
 //     fila.insertAdjacentElement("beforeend", celda);
 //   }
 // }

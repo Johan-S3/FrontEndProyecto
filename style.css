@@ -37,6 +37,10 @@ header {
 
 section {
   padding: var(--padding);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 a {
@@ -268,4 +272,32 @@ button:hover {
   display: flex;
   align-items: center;
   flex-direction: column;
+}
+
+
+table, th, td {
+  width: max-content;
+  border: 1px solid black;
+  border-collapse: collapse;
+  text-align: center;  
+  padding: 0 15px;
+}
+
+th{
+  background-color: var(--input);
+  color: #fff;
+}
+tr:hover{
+  background-color: var(--hover);
+}
+
+table{
+  border-radius: 25px;
+}
+
+.botonAccion{
+  display: inline-block;
+  width: min-content;
+  padding: 5px;
+  margin: 10px;
 }
