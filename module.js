@@ -164,3 +164,55 @@ export function editarRegistro(lista, id, nuevosDatos) { // --Put
 export function eliminarRegistro(lista, id) { // -- Delete
   return lista.filter(item => item.id !== id);
 }
+
+const url = "http://localhost:3000";
+
+// GET - Obtener todos los registros
+export async function obtenerDatos(endpoint) {
+  try {
+    const respuesta = await fetch(`${url}/${endpoint}`);
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al obtener datos:", error);
+    return [];
+  }
+}
+
+// POST - Crear nuevo registro
+export async function crearDato(endpoint, datos) {
+  try {
+    const respuesta = await fetch(`${url}/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al crear dato:", error);
+  }
+}
+
+// PUT - Editar registro existente
+export async function editarDato(endpoint, id, datos) {
+  try {
+    const respuesta = await fetch(`${url}/${endpoint}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al editar dato:", error);
+  }
+}
+
+// DELETE - Eliminar registro
+export async function eliminarDato(endpoint, id) {
+  try {
+    await fetch(`${url}/${endpoint}/${id}`, {
+      method: "DELETE",
+    });
+  } catch (error) {
+    console.error("Error al eliminar dato:", error);
+  }
+}

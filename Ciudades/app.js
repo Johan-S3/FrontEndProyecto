@@ -6,7 +6,7 @@ import { validarFormulario, outFocus, validarLetras, crearRegistro, editarRegist
 
 const formulario = document.querySelector("form");
 const nombreCiudad = document.querySelector('[name="nombreCiudad"]');
-const tabla = document.querySelector(".cuerpoTablaCiudades");
+const tabla = document.querySelector(".cuerpoTabla");
 
 // Eventos
 
