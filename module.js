@@ -148,22 +148,6 @@ export const validarCaracteres = (event) => {
 
 
 // Funciones CRUD 
-export function crearRegistro(lista, nuevoObjeto) { // --Post
-  const nuevoId = lista.length > 0 ? lista[lista.length - 1].id + 1 : 1;
-  nuevoObjeto.id = nuevoId;
-  lista.push(nuevoObjeto);
-  return lista;
-}
-
-export function editarRegistro(lista, id, nuevosDatos) { // --Put
-  return lista.map(item =>
-    item.id === id ? { ...item, ...nuevosDatos } : item
-  );
-}
-
-export function eliminarRegistro(lista, id) { // -- Delete
-  return lista.filter(item => item.id !== id);
-}
 
 const url = "http://localhost:3000";
 
@@ -216,3 +200,4 @@ export async function eliminarDato(endpoint, id) {
     console.error("Error al eliminar dato:", error);
   }
 }
+

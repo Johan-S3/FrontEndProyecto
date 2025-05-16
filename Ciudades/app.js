@@ -1,6 +1,6 @@
 //Importaciones
 
-import { validarFormulario, outFocus, validarLetras, crearRegistro, editarRegistro, eliminarRegistro } from "../module.js";
+import { validarFormulario, outFocus, validarLetras, obtenerDatos, crearDato, editarDato, eliminarDato } from "../module.js";
 
 // Variables
 
@@ -9,68 +9,101 @@ const nombreCiudad = document.querySelector('[name="nombreCiudad"]');
 const tabla = document.querySelector(".cuerpoTabla");
 
 // Eventos
-
-// formulario.addEventListener("submit", validarFormulario);
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCiudades();
+});
 
 nombreCiudad.addEventListener("keydown", validarLetras);
 
 nombreCiudad.addEventListener("blur", outFocus);
 
+formulario.addEventListener("submit", async (e) => {
+  const datos = validarFormulario(e);
+  if (datos) {
+    const objetoCiudad = {
+      nombre: datos.nombreCiudad,
+    };
 
+    if (idEditar) {
+      await editarDato("ciudades", idEditar, objetoCiudad);
+      idEditar = null;
+    } else {
+      await crearDato("ciudades", objetoCiudad);
+    }
 
+    formulario.reset();
+    await cargarCiudades();
+  }
+});
 
 // Variables donde se almacenan los datos registrados y donde se almacena el id del elemento que se quiere editar temporalmente.
 let ciudades = [];
 let idEditar = null;
 
-formulario.addEventListener("submit", (e) => {
-  const datos = validarFormulario(e);
-  if (datos) {
-    if (idEditar) {
-      ciudades = editarRegistro(ciudades, idEditar, { nombre: datos.nombreCiudad });
-      idEditar = null;
-    } else {
-      ciudades = crearRegistro(ciudades, { nombre: datos.nombreCiudad });
-    }
-    renderizarTabla();
-    formulario.reset();
-  }
-});
+async function cargarCiudades() {
+  ciudades = await obtenerDatos("ciudades");
+  renderizarTabla();
+}
 
 function renderizarTabla() {
-  tabla.innerHTML = "";
-  ciudades.forEach((ciudad) => {
+  tabla.textContent = "";
+  console.log(ciudades);
+  
+  ciudades.data.forEach((ciudad) => {
+    // Creo la fila
     const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${ciudad.id}</td>
-      <td>${ciudad.nombre}</td>
-      <td>
-        <button class="botonAccion editar" data-id="${ciudad.id}">Editar</button>
-        <button class="botonAccion eliminar" data-id="${ciudad.id}">Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
+
+    // Celda del ID de la ciudad
+    const tdId = document.createElement("td");
+    tdId.textContent = ciudad.id;
+
+    // Celda del Nombre de la ciudad
+    const tdnombre = document.createElement("td");
+    tdnombre.textContent = ciudad.nombre;
+
+    // Celda de los botondes de acción
+    const tdAcciones = document.createElement("td");
+
+    // Creo el selector botón con accion de editar
+    const btnEditar = document.createElement("button");
+    btnEditar.classList.add("botonAccion", "editar")
+    btnEditar.setAttribute("data-id", ciudad.id);
+    btnEditar.textContent = "Editar";
+
+    // Creo el selector botón con accion de eliminar
+    const btnEliminar = document.createElement("button");
+    btnEliminar.classList.add("botonAccion", "eliminar")
+    btnEliminar.setAttribute("data-id", ciudad.id);
+    btnEliminar.textContent = "Eliminar";
+
+    // Agrego botones a la celda de acciones
+    tdAcciones.append(btnEditar, btnEliminar);
+    // Agrego celdas a la fila
+    fila.append(tdId, tdnombre, tdAcciones);
+    // Agrego a la tabla la fila
+    tabla.append(fila);
   });
 
-  const botonesEditar = tabla.querySelectorAll(".editar");
-  const botonesEliminar = tabla.querySelectorAll(".eliminar");
-
-  botonesEditar.forEach((btn) => {
+  // Eventos después de renderizar
+  tabla.querySelectorAll(".editar").forEach((btn) =>
     btn.addEventListener("click", (e) => {
       const id = parseInt(e.target.dataset.id);
-      const ciudad = ciudades.find((c) => c.id === id);
+      const ciudad = ciudades.data.find((c) => c.id === id);
       if (ciudad) {
         nombreCiudad.value = ciudad.nombre;
         idEditar = ciudad.id;
       }
-    });
-  });
+    })
+  );
 
-  botonesEliminar.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+  tabla.querySelectorAll(".eliminar").forEach((btn) =>
+    btn.addEventListener("click", async (e) => {
       const id = parseInt(e.target.dataset.id);
-      ciudades = eliminarRegistro(ciudades, id);
-      renderizarTabla();
-    });
-  });
+      let confirmacion = confirm(`¿Esta seguro de eliminar la ciudad?`);
+      if (confirmacion) {
+        await eliminarDato("ciudades", id);
+        await cargarCiudades();
+      }
+    })
+  );
 }

@@ -1,6 +1,6 @@
 //Importaciones
 
-import { validarFormulario, outFocus, limitar, validarLetras, validarNumeros, validarCaracteres } from "../module.js";
+import { validarFormulario, outFocus, limitar, validarLetras, validarNumeros, validarCaracteres , obtenerDatos, crearDato, editarDato, eliminarDato} from "../module.js";
 
 
 
@@ -63,4 +63,28 @@ constrasena.addEventListener("blur", outFocus);
 generos.forEach(genero => {
   genero.addEventListener("change", validarGenero);
 })
+
+
+addEventListener("DOMContentLoaded", cargarCiudades())
+let ciudades = [];
+async function cargarCiudades() {
+  ciudades = await obtenerDatos("ciudades");
+  llenarCiudades();
+}
+
+function llenarCiudades() {
+  ciudad.textContent = "";
+
+  console.log(ciudades);
+  
+  ciudades.data.forEach((ciud) => {
+    // Creo el option
+    const option = document.createElement("option");
+
+    option.setAttribute("value", ciud.id);
+    option.textContent = `${ciud.nombre}`
+
+    ciudad.append(option);
+  })
+}
 
