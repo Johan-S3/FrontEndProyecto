@@ -301,3 +301,13 @@ table{
   padding: 5px;
   margin: 10px;
 }
+
+.div--flex{
+  display: grid;
+  grid-template-columns: repeat(2, min-content);
+  gap: 2px;
+}
+
+.div--flex h4{
+  grid-column: 1/3;
+}

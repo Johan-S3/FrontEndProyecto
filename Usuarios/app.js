@@ -19,6 +19,9 @@ const generos = document.querySelectorAll('[name = "genero"]');
 const btn = document.querySelector("#btn_validar");
 
 
+const generosContent = document.querySelector(".radios");
+const lenguajesContent = document.querySelector(".form__checks");
+
 //Funciones
 
 const validarCheck = (event) => {
@@ -60,24 +63,32 @@ documento.addEventListener("blur", outFocus);
 usuario.addEventListener("blur", outFocus);
 constrasena.addEventListener("blur", outFocus);
 
-generos.forEach(genero => {
-  genero.addEventListener("change", validarGenero);
-})
 
-
-addEventListener("DOMContentLoaded", cargarCiudades())
-let ciudades = [];
+addEventListener("DOMContentLoaded", cargarCiudades(), cargarGeneros(), cargarLenguajes())
+let ciudadesExist = [];
 async function cargarCiudades() {
-  ciudades = await obtenerDatos("ciudades");
+  ciudadesExist = await obtenerDatos("ciudades");
   llenarCiudades();
 }
 
-function llenarCiudades() {
-  ciudad.textContent = "";
+let generosExist = [];
+async function cargarGeneros(){
+  generosExist = await obtenerDatos("generos");
+  llenarGeneros();
+}
 
-  console.log(ciudades);
+let lenguajesExist = [];
+async function cargarLenguajes(){
+  lenguajesExist = await obtenerDatos("lenguajes");
+  llenarLenguajes();
+}
+
+function llenarCiudades() {
+  // ciudad.textContent = "";
+
+  console.log(ciudadesExist);
   
-  ciudades.data.forEach((ciud) => {
+  ciudadesExist.data.forEach((ciud) => {
     // Creo el option
     const option = document.createElement("option");
 
@@ -87,4 +98,53 @@ function llenarCiudades() {
     ciudad.append(option);
   })
 }
+
+function llenarGeneros() {
+  console.log(generosExist);
+  
+  generosExist.data.forEach((gender) => {
+    // Creo el input type radio y su label
+    const input = document.createElement("input");
+    const label = document.createElement("label");
+
+    input.classList.add("form__inputs")
+    input.setAttribute("type", "radio");
+    input.setAttribute("value", gender.id);
+    input.setAttribute("name", "genero");
+    input.setAttribute("id", gender.nombre);
+    input.setAttribute("required", "");
+
+    // Agrego el evento que vefica si el input cambia de estado checked
+    input.addEventListener("change", validarGenero);
+
+    label.setAttribute("for", gender.nombre);
+    label.textContent = `${gender.nombre}`;
+
+    generosContent.append(input,label);
+  })
+}
+
+function llenarLenguajes() {
+  console.log(lenguajesExist);
+  
+  lenguajesExist.data.forEach((languaje) => {
+     // Creo el input type checkbox y su label
+     const input = document.createElement("input");
+     const label = document.createElement("label");
+
+     input.classList.add("form__inputs")
+     input.setAttribute("type", "checkbox");
+     input.setAttribute("value", languaje.value);
+     input.setAttribute("name", "habilidades");
+     input.setAttribute("id", languaje.nombre);
+     input.setAttribute("required", "");
+     input.textContent = `${languaje.nombre}`
+
+     label.setAttribute("for", languaje.nombre);
+     label.textContent = `${languaje.nombre}`;
+ 
+     lenguajesContent.append(input,label);
+  })
+}
+
 
