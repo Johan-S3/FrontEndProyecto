@@ -32,7 +32,9 @@ export const validarFormulario = (e) => {
   if (checks.length > 0) {
     const checkBoxSelected = checks.filter((check) => check.checked) || [];
     if (checkBoxSelected.length < 3) {
-      alert("Debe seleccionar 3 o más habilidades");
+      setTimeout(() => {
+        alert("Debe seleccionar 3 o más habilidades");
+      }, 300);
       
     } else {
       objeto.lenguaje = checkBoxSelected.map((elemento) => {
