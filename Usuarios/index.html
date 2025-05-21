@@ -37,7 +37,7 @@
               <input type="tel" name="telefono" placeholder="Telefono" maxlength="10" required>
             </div>
             <div class="form__control">
-              <select name="ciudad" id="ciudad" required>
+              <select name="id_ciudad" id="ciudad" required>
                 <option>Ciudades</option>
               </select>
             </div>
@@ -48,7 +48,7 @@
               <input type="text" name="usuario" placeholder="Usuario" required>
             </div>
             <div class="form__control">
-              <input type="password" name="constrasena" placeholder="Contraseña" required>
+              <input type="password" name="contrasena" placeholder="Contraseña" required>
             </div>
             <div class="form__control">
               <div class="radios div--flex">
@@ -75,20 +75,30 @@
             <button type="submit" name="" id="btn_validar">Registrar</button>
           </form>
         </div>
-
-        <!-- <table class="table">
+      </div>
+    </section>
+    <section>
+      <h2>Usuarios Registradas</h2>
+      <table>
+        <thead>
           <tr>
+            <th>ID</th>
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Telefono</th>
             <th>Ciudad</th>
             <th>Documento</th>
             <th>Usuario</th>
-            <th>constraseña</th>
+            <th>Contraseña</th>
+            <th>Genero</th>
+            <th>Habilidades</th>
+            <th>Acciones</th> 
           </tr>
-        </table> -->
-      </div>
-    </section>
+        </thead>
+        <tbody class="cuerpoTabla">
+
+        </tbody>
+      </table>
   </main>
   <script src="app.js" type="module"></script>
 </body>
