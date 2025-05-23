@@ -1,74 +1,62 @@
+// Creo el objeto fuera y lo exporto para poder importarlo en otros archivos
+export let objeto = {};
+
+// FUNCIÓN PARA VALIDAR FORMULARIO
 export const validarFormulario = (e) => {
-  let objeto = {};
-  e.preventDefault();
-  // console.log(e.target.children);
-  
-  // Capturo todos los campos requeridos
+  objeto = {}; // Limpio el objeto en cada validación
+
+  let isValid = true; // Variable que controla si todo está correcto
+
+  // Capturo todos los campos requeridos dentro del formulario
   const campos = [...e.target].filter((elemento) => {
-    if(elemento.hasAttribute("required")) return elemento;
+    if (elemento.hasAttribute("required")) return elemento;
   });
 
-  // Capturo todos los campos de tipo radio
-  const radios = [...campos].filter((elemento) => {
-    return elemento.type == "radio";
-  }) 
+  // Validación para campos tipo radio (selección única)
+  const radios = campos.filter(elemento => elemento.type === "radio");
   
-  // Capturo todos los radios que están checkeados
-  let isChecked = null
+  let isChecked = null;
   if (radios.length > 0) {
-    isChecked = radios.find((radio) => radio.checked) || [];
-    if (isChecked.length === 0) {
+    isChecked = radios.find(radio => radio.checked) || null;
+    if (!isChecked) {
       objeto[radios[0].name] = "";
+      isValid = false;
     } else {
       objeto[isChecked.name] = isChecked.value;
-    }  
+    }
   }
-  
-  // Capturo todos los campos de tupo checkbox
-  const checks = [...campos].filter((elemento) => {
-    return elemento.type == "checkbox";
-  })
-  
+
+  // Validación para campos tipo checkbox (múltiples opciones)
+  const checks = campos.filter(elemento => elemento.type === "checkbox");
+
   if (checks.length > 0) {
-    const checkBoxSelected = checks.filter((check) => check.checked) || [];
+    const checkBoxSelected = checks.filter(check => check.checked);
     if (checkBoxSelected.length < 3) {
       setTimeout(() => {
         alert("Debe seleccionar 3 o más habilidades");
       }, 300);
-      
+      isValid = false;
     } else {
-      objeto.lenguaje = checkBoxSelected.map((elemento) => {
-        return elemento.value;
-      })
-    }    
+      objeto.lenguaje = checkBoxSelected.map(el => el.value);
+    }
   }
 
+  // Validaciones para inputs y selects
+  campos.forEach(campo => {
+    const nameCampo = campo.getAttribute("name");
+    const placeHolder = campo.getAttribute("placeholder");
 
-  let isFull = true;
-  campos.forEach((campo) => {
-    let nameCampo = campo.getAttribute("name");
-    let placeHolder = campo.getAttribute("placeholder");
     switch (campo.tagName) {
       case "INPUT":
-        if(campo.type == "text" || campo.type == "number" || campo.type == "tel" || campo.type == "password"){
+        if (["text", "number", "tel", "password"].includes(campo.type)) {
           if (!campo.value) {
             if (campo.nextElementSibling) campo.nextElementSibling.remove();
             campo.classList.add("form__input");
             let mensaje = document.createElement("span");
             mensaje.classList.add("form__mensaje");
-            mensaje.textContent =  `El campo ${placeHolder} es obligatorio.`;
+            mensaje.textContent = `El campo ${placeHolder} es obligatorio.`;
             campo.insertAdjacentElement("afterend", mensaje);
-          }
-        }
-        if (campo.type == "radio") {
-          if (isChecked == 0) {
-            let contenedor = document.querySelector(".radios")
-            if (contenedor.nextElementSibling) contenedor.nextElementSibling.remove();
-            contenedor.classList.add("form__radios");
-            let mensaje = document.createElement("span");
-            mensaje.classList.add("form__mensaje");
-            mensaje.textContent = `Debe seleccionar su ${nameCampo}`;
-            contenedor.insertAdjacentElement("afterEnd", mensaje);
+            isValid = false;
           }
         }
         break;
@@ -80,80 +68,66 @@ export const validarFormulario = (e) => {
           mensaje.classList.add("form__mensaje");
           mensaje.textContent = `Debe seleccionar una opción de ${nameCampo}`;
           campo.insertAdjacentElement("afterend", mensaje);
+          isValid = false;
         }
         break;
       default:
         break;
     }
 
-    //Valido si el campo tiene informacion le agrego al objeto la propiedad con su name y su valor.
-    if (campo.type != "radio" && campo.type != "checkbox") {
-      if((campo.tagName == "INPUT" && campo.value) || (campo.tagName == "SELECT" && campo.selectedIndex != 0)){
+    // Si el campo tiene datos válidos, lo agregamos al objeto
+    if (!["radio", "checkbox"].includes(campo.type)) {
+      if ((campo.tagName === "INPUT" && campo.value) || (campo.tagName === "SELECT" && campo.selectedIndex !== 0)) {
         objeto[nameCampo] = campo.value;
-      } else {
-        isFull = false;
+      } else if (campo.hasAttribute("required")) {
+        isValid = false;
       }
     }
-  })
+  });
 
-  if (Object.keys(objeto).length > 0) {
-      if (isFull){
-        console.log(objeto);
-        return objeto
-      } else{
-        return null;
-      }
-  }  
-}
+  return isValid;
+};
 
-// export const llenarTabla = (objeto) => {
-//   const tabla = document.querySelector("table");
-//   let fila = document.createElement("tr");
-//   tabla.insertAdjacentElement("beforeend", fila);
-//   for (let i = 0; i < Object.keys(objeto).length; i++) {
-//     let celda = document.createElement("td");
-//     celda.textContent = objeto[i];
-//     fila.insertAdjacentElement("beforeend", celda);
-//   }
-// }
-
-
+// FUNCIÓN PARA LIMPIAR VALIDACIÓN AL PERDER EL FOCO
 export const outFocus = (event) => {
   if (event.target.value) {
     event.target.classList.remove("form__input");
-    if(event.target.nextElementSibling) event.target.nextSibling.remove();
+    if (event.target.nextElementSibling) event.target.nextSibling.remove();
   }
-}
+};
 
+// FUNCIÓN PARA LIMITAR EL NÚMERO DE CARACTERES EN UN INPUT
 export const limitar = (event) => {
-  if (event.target.value.length  == 10) {
+  if (event.target.value.length === 10) {
     event.preventDefault();
   }
-}
+};
 
-const teclasEspeciales = ["Backspace", "Delete", "Tab", "Enter", "Home", "End", "Shift"];
-const regexLetras = /^[a-záéíóú ]$/i;
+// Expresiones regulares para validaciones
+const teclasEspeciales = ["Backspace", "Delete", "Tab", "Enter", "Home", "End", "Shift", "ArrowLeft", "ArrowRight"];
+const regexLetras = /^[a-zñáéíóú ]$/i;
 const regexNumeros = /^[0-9]$/;
-const regexCaracteres = /^[a-záéíóú0-9\-._&# ]$/i;
+const regexCaracteres = /^[a-zñáéíóú0-9\-._&# ]$/i;
 
+// VALIDACIÓN DE ENTRADA PARA LETRAS
 export const validarLetras = (event) => {
-  if(!regexLetras.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
-}
+  if (!regexLetras.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
+};
 
+// VALIDACIÓN DE ENTRADA PARA NÚMEROS
 export const validarNumeros = (event) => {
-  if(!regexNumeros.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
-}
+  if (!regexNumeros.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
+};
 
+// VALIDACIÓN DE ENTRADA PARA CARACTERES ESPECIALES
 export const validarCaracteres = (event) => {
-  if(!regexCaracteres.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
-}
+  if (!regexCaracteres.test(event.key) && !teclasEspeciales.includes(event.key)) event.preventDefault();
+};
 
-
-// Funciones CRUD 
-
+// FUNCIONES CRUD (INTERACCIÓN CON EL SERVIDOR)
 const url = "http://localhost:3000";
 
-// GET - Obtener todos los registros
+// OBTENER DATOS DE UN ENDPOINT
 export async function obtenerDatos(endpoint) {
   try {
     const respuesta = await fetch(`${url}/${endpoint}`);
@@ -164,21 +138,21 @@ export async function obtenerDatos(endpoint) {
   }
 }
 
-// POST - Crear nuevo registro
+// CREAR UN NUEVO REGISTRO EN EL SERVIDOR
 export async function crearDato(endpoint, datos) {
-  try {
+  try {    
     const respuesta = await fetch(`${url}/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(datos),
     });
-    return await respuesta.json();
+    return respuesta;
   } catch (error) {
     console.log("Error al crear dato:", error);
   }
 }
 
-// PUT - Editar registro existente
+// EDITAR UN REGISTRO EXISTENTE
 export async function editarDato(endpoint, id, datos) {
   try {
     const respuesta = await fetch(`${url}/${endpoint}/${id}`, {
@@ -192,14 +166,14 @@ export async function editarDato(endpoint, id, datos) {
   }
 }
 
-// DELETE - Eliminar registro
+// ELIMINAR UN REGISTRO DEL SERVIDOR
 export async function eliminarDato(endpoint, id) {
-  try {
-    await fetch(`${url}/${endpoint}/${id}`, {
+  try {    
+    const response = await fetch(`${url}/${endpoint}/${id}`, {
       method: "DELETE",
-    });
+    });    
+    return await response.json();
   } catch (error) {
     console.error("Error al eliminar dato:", error);
   }
 }
-
