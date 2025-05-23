@@ -174,7 +174,7 @@ export async function crearDato(endpoint, datos) {
     });
     return await respuesta.json();
   } catch (error) {
-    console.error("Error al crear dato:", error);
+    console.log("Error al crear dato:", error);
   }
 }
 

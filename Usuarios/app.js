@@ -22,6 +22,7 @@ const tabla = document.querySelector(".cuerpoTabla")
 const generosContent = document.querySelector(".radios");
 const lenguajesContent = document.querySelector(".form__checks");
 
+
 //Funciones
 
 const validarCheck = (event) => {
@@ -55,10 +56,15 @@ async function cargarLenguajes(){
   llenarLenguajes();
 }
 
+let lenguajesUsuariosExist = [];
+async function cargarLenguajesUsuarios(){
+  lenguajesUsuariosExist = await obtenerDatos("lenguajes_usuarios");
+}
+
 function llenarCiudades() {
   // ciudad.textContent = "";
 
-  console.log(ciudadesExist);
+  // console.log(ciudadesExist);
   
   ciudadesExist.data.forEach((ciud) => {
     // Creo el option
@@ -72,7 +78,7 @@ function llenarCiudades() {
 }
 
 function llenarGeneros() {
-  console.log(generosExist);
+  // console.log(generosExist);
   
   generosExist.data.forEach((gender) => {
     // Creo el input type radio y su label
@@ -97,7 +103,7 @@ function llenarGeneros() {
 }
 
 function llenarLenguajes() {
-  console.log(lenguajesExist);
+  // console.log(lenguajesExist);
   
   lenguajesExist.data.forEach((languaje) => {
      // Creo el input type checkbox y su label
@@ -125,13 +131,12 @@ let idEditar = null;
 
 async function cargarUsuarios() {
   usuarios = await obtenerDatos("usuarios");
+  cargarCiudades(), cargarLenguajesUsuarios();
   renderizarTabla();
 }
 
 function renderizarTabla() {
-  tabla.textContent = "";
-  console.log(usuarios);
-  
+  tabla.textContent = "";  
   usuarios.data.forEach((usuario) => {
     // Creo la fila
     const fila = document.createElement("tr");
@@ -154,7 +159,8 @@ function renderizarTabla() {
 
     // Celda de la ciudad del usuario
     const tdCiudad = document.createElement("td");
-    tdCiudad.textContent = usuario.id_ciudad;
+    const ciudad = ciudadesExist.data.find(c => c.id == usuario.id_ciudad)
+    tdCiudad.textContent = ciudad.nombre;
 
     // Celda del documento del usuario
     const tdDocumento = document.createElement("td");
@@ -170,11 +176,20 @@ function renderizarTabla() {
 
     // Celda del genero del usuario
     const tdGenero = document.createElement("td");
-    tdGenero.textContent = usuario.id_genero;
+    const genero = generosExist.data.find(g => g.id == usuario.id_genero  )
+    tdGenero.textContent = genero.nombre;
 
     // Celda del genero del usuario
     const tdLenguajes = document.createElement("td");
-    // ......Falta
+    const relacionLenguajeUsuario = lenguajesUsuariosExist.data.filter( (dato) => dato.id_usuario ==  usuario.id)
+    
+    Promise.all(relacionLenguajeUsuario)
+
+    const nombresLenguajes = relacionLenguajeUsuario.map((relacion) => {
+      const lenguaje = lenguajesExist.data.find( l => l.id == relacion.id_lenguaje)
+      return lenguaje.nombre;
+    })
+    tdLenguajes.textContent = nombresLenguajes.join(", ");
 
     // Celda de los botondes de acción
     const tdAcciones = document.createElement("td");
@@ -201,19 +216,27 @@ function renderizarTabla() {
 
   // Eventos después de renderizar
   tabla.querySelectorAll(".editar").forEach((btn) =>
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const id = parseInt(e.target.dataset.id);
-      const user = usuarios.data.find((c) => c.id === id);
-      if (user) {
-        nombre.value = user.nombre;
-        apellido.value = user.apellido;
-        telefono.value = user.telefono;
-        ciudad.value = user.id_ciudad
-        documento.value = user.documento;
-        usuario.value = user.usuario;
-        contrasena.value = user.contrasena;
-        document.querySelector(`input[type="radio"][value="${user.id_genero}"]`).checked = true;
-        idEditar = user.id;
+      let confirmacion = confirm(`¿Esta seguro de editar el usuario?`);
+      if (confirmacion) {
+        const user = usuarios.data.find((c) => c.id === id);
+        const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
+        const lenguajedelUsuario = lenguajesUsuarios.data.filter((dato) => dato.id_usuario == user.id);
+        
+        lenguajedelUsuario.map((dato) => document.querySelector(`input[type="checkbox"][value="${dato.id_lenguaje}"]`).checked = true)
+        
+        if (user) {
+          nombre.value = user.nombre;
+          apellido.value = user.apellido;
+          telefono.value = user.telefono;
+          ciudad.value = user.id_ciudad
+          documento.value = user.documento;
+          usuario.value = user.usuario;
+          contrasena.value = user.contrasena;
+          document.querySelector(`input[type="radio"][value="${user.id_genero}"]`).checked = true;
+          idEditar = user.id;
+        }
       }
     })
   );
@@ -223,7 +246,19 @@ function renderizarTabla() {
       const id = parseInt(e.target.dataset.id);
       let confirmacion = confirm(`¿Esta seguro de eliminar el usuario?`);
       if (confirmacion) {
-        await eliminarDato("usuarios", id);
+        try { //Recuerde que este try..catch si quiere lo puede borrar.
+          const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
+
+          // lenguajesUsuarios.data.forEach((dato) => console.log(dato.id_usuario == id))
+          
+          // Le asigno a una variable el proceso de eliminar los usuarios relacionados en la tabla lenguajes_usuarios para posteriormente eliminar el usuario sin ningún problema.
+          const promesas = lenguajesUsuarios.data.filter((dato) => dato.id_usuario == id).map((dato) => eliminarDato("lenguajes_usuarios", dato.id));
+
+          await Promise.all(promesas);
+          await eliminarDato("usuarios", id);
+        } catch (error) {
+          alert("No se puede eliminar el usuario ya que tiene lenguajes asociados");
+        }
         await cargarUsuarios();
       }
     })
@@ -254,11 +289,43 @@ formulario.addEventListener("submit", async (e) => {
       id_ciudad: datos.id_ciudad
     };
 
+    const checkBoxMarcados = document.querySelectorAll(`[name="habilidades"]:checked`)
+
+    const lenguajesSeleccionados = [];
+
+    checkBoxMarcados.forEach((checkbox) => {
+      const valor = parseInt(checkbox.value);
+      lenguajesSeleccionados.push(valor);
+    });
+
     if (idEditar) {
       await editarDato("usuarios", idEditar, objetoUsuario);
+      const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
+      const promesas = lenguajesUsuarios.data.filter((dato) => dato.id_usuario == idEditar).map((dato) => eliminarDato("lenguajes_usuarios", dato.id));
+      await Promise.all(promesas);
+
+      await Promise.all(lenguajesSeleccionados.map(async(idLenguaje) => {
+        const objetoLenguajesUsuario = {
+          id_usuario: idEditar,
+          id_lenguaje: idLenguaje
+        };
+        return await crearDato("lenguajes_usuarios", objetoLenguajesUsuario);
+      }));
+
+      location.reload(); 
       idEditar = null;
     } else {
-      await crearDato("usuarios", objetoUsuario);
+      const nuevoUsuario = await crearDato("usuarios", objetoUsuario);
+
+      // console.log(lenguajesSeleccionados);
+      
+      await Promise.all(lenguajesSeleccionados.map(async(idLenguaje) => {
+        const objetoLenguajesUsuario = {
+          id_usuario: nuevoUsuario.data.id,
+          id_lenguaje: idLenguaje
+        };
+        return await crearDato("lenguajes_usuarios", objetoLenguajesUsuario);
+      }));
     }
 
     formulario.reset();
@@ -282,6 +349,6 @@ usuario.addEventListener("blur", outFocus);
 contrasena.addEventListener("blur", outFocus);
 
 
-addEventListener("DOMContentLoaded", cargarCiudades(), cargarGeneros(), cargarLenguajes())
+addEventListener("DOMContentLoaded", cargarCiudades(), cargarGeneros(), cargarLenguajes(), cargarLenguajesUsuarios())
 
 
