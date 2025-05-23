@@ -216,6 +216,79 @@ function renderizarTabla() {
     // Se agrega la fila completa a la tabla
     tabla.append(fila);
   });
+
+  // Eventos después de renderizar
+tabla.querySelectorAll(".editar").forEach((btn) =>
+  btn.addEventListener("click", async (e) => {
+    // Obtener el ID del usuario desde el atributo data-id del botón
+    const id = parseInt(e.target.dataset.id);
+
+    // Confirmación del usuario antes de proceder a editar
+    let confirmacion = confirm(`¿Esta seguro de editar el usuario?`);
+    if (confirmacion) {
+      // Buscar el usuario correspondiente por ID
+      const user = usuarios.data.find((c) => c.id === id);
+
+      // Obtener los datos de la relación usuario-lenguajes
+      const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
+
+      // Filtrar los lenguajes que tiene asignado este usuario
+      const lenguajedelUsuario = lenguajesUsuarios.data.filter((dato) => dato.id_usuario == user.id);
+      
+      // Marcar los checkboxes correspondientes a los lenguajes del usuario
+      lenguajedelUsuario.map((dato) => document.querySelector(`input[type="checkbox"][value="${dato.id_lenguaje}"]`).checked = true)
+      
+      if (user) {
+        // Rellenar el formulario con los datos del usuario seleccionado
+        nombre.value = user.nombre;
+        apellido.value = user.apellido;
+        telefono.value = user.telefono;
+        ciudad.value = user.id_ciudad
+        documento.value = user.documento;
+        usuario.value = user.usuario;
+        contrasena.value = user.contrasena;
+        document.querySelector(`input[type="radio"][value="${user.id_genero}"]`).checked = true;
+
+        // Guardar el ID del usuario que se está editando
+        idEditar = user.id;
+      }
+    }
+  })
+);
+
+tabla.querySelectorAll(".eliminar").forEach((btn) =>
+  btn.addEventListener("click", async (e) => {
+    // Obtener el ID del usuario desde el atributo data-id del botón
+    const id = parseInt(e.target.dataset.id);
+
+    // Confirmación del usuario antes de proceder a eliminar
+    let confirmacion = confirm(`¿Esta seguro de eliminar el usuario?`);
+    if (confirmacion) {
+      try { 
+        // Obtener los datos de la relación usuario-lenguajes
+        const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
+
+        // Filtrar los registros de lenguajes asociados al usuario y generar promesas para eliminarlos
+        const promesas = lenguajesUsuarios.data
+          .filter((dato) => dato.id_usuario == id)
+          .map((dato) => eliminarDato("lenguajes_usuarios", dato.id));
+
+        // Esperar a que se eliminen todos los lenguajes asociados
+        await Promise.all(promesas);
+
+        // Eliminar el usuario después de eliminar sus relaciones
+        await eliminarDato("usuarios", id);
+      } catch (error) {
+        // Mostrar mensaje si ocurre un error, normalmente por relaciones no eliminadas
+        alert("No se puede eliminar el usuario ya que tiene lenguajes asociados");
+      }
+
+      // Recargar la lista de usuarios en la interfaz
+      await cargarUsuarios();
+    }
+  })
+);
+
 }
 
 
@@ -268,7 +341,17 @@ formulario.addEventListener("submit", async (e) => {
 
     // Si hay un ID de edición, se actualiza el usuario existente
     if (idEditar) {
-      await editarDato("usuarios", idEditar, objetoUsuario); // Se envía la solicitud para actualizar el usuario
+      // Se envía la solicitud para actualizar el usuario
+      const respuestaEdicion = await editarDato("usuarios", idEditar, objetoUsuario);
+      // const resultadoEdicion = await respuestaEdicion.json(); // Se convierte la respuesta en JSON
+      console.log(respuestaEdicion.erros);
+
+      
+      // Si la respuesta tiene errores, se muestra una alerta con el mensaje de error
+      if (!respuestaEdicion.success) {
+        alert(respuestaEdicion.erros[0].message);
+        return; // Se detiene el flujo si hay error
+      }
 
       // Se obtienen los lenguajes que tenía el usuario y se eliminan para actualizar los datos
       const lenguajesUsuarios = await obtenerDatos("lenguajes_usuarios");
@@ -278,19 +361,24 @@ formulario.addEventListener("submit", async (e) => {
       // Se asignan los nuevos lenguajes al usuario
       await Promise.all(lenguajesSeleccionados.map(async (idLenguaje) => {
         const objetoLenguajesUsuario = {
-          id_usuario: idEditar,
-          id_lenguaje: idLenguaje
-        };
-        return await crearDato("lenguajes_usuarios", objetoLenguajesUsuario);
-      }));
+        id_usuario: idEditar,
+        id_lenguaje: idLenguaje,
+      };
+      formulario.reset(); // Se limpia el formulario después de enviar los datos
+      return await crearDato("lenguajes_usuarios", objetoLenguajesUsuario);
 
-      location.reload(); // Se recarga la página para reflejar los cambios
-      idEditar = null; // Se reinicia la variable de edición
-    } else {
+    })
+  );
+
+  idEditar = null; // Se reinicia la variable de edición
+
+  } else {
       // Se envía la solicitud para crear un nuevo usuario
       const nuevoUsuario = await crearDato("usuarios", objetoUsuario);
       const nuevoUsuarioDatos = await nuevoUsuario.json(); // Se convierte la respuesta en JSON
 
+      // console.log(nuevoUsuarioDatos);
+      
       // Si la respuesta tiene errores, se muestra una alerta con el mensaje de error
       if (!nuevoUsuarioDatos.success) {
         alert(nuevoUsuarioDatos.erros[0].message);
